@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Token Saver Pro — Save Tokens, Save Money 🪨</title>
+<meta name="description" content="Token Saver Pro: Calculate how many tokens and dollars you save by using caveman-style communication. Bulk processing, history tracking, CSV export, API access.">
+<meta name="keywords" content="token saver, caveman tokens, AI cost calculator, token calculator, save AI costs, caveman communication">
+<meta property="og:title" content="Token Saver Pro 🪨">
+<meta property="og:description" content="Calculate token savings with caveman-style communication. Save tokens, save money.">
+<meta property="og:url" content="https://rumblingb.github.io/token-saver-pro/">
+<style>
+:root{--bg:#0d1117;--surface:#161b22;--border:#30363d;--text:#c9d1d9;--muted:#8b949e;--accent:#f0883e;--green:#3fb950;--red:#f85149;--blue:#58a6ff;--radius:8px}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;line-height:1.6;min-height:100vh;display:flex;flex-direction:column}
+header{background:var(--surface);border-bottom:1px solid var(--border);padding:.8rem 1.5rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem}
+.logo{font-size:1.3rem;font-weight:800}.logo span{color:var(--accent)}.logo .rock{font-size:1.5rem}
+.cta-btn{background:var(--accent);color:#000;border:none;padding:.55rem 1.2rem;border-radius:var(--radius);font-weight:700;cursor:pointer;font-size:.85rem;transition:transform .1s;text-decoration:none;display:inline-block}
+.cta-btn:hover{transform:scale(1.03)}
+main{flex:1;max-width:960px;margin:0 auto;padding:1.5rem 1rem;width:100%}
+.hero{text-align:center;padding:2rem 0 1.5rem}
+.hero h1{font-size:clamp(1.6rem,4vw,2.5rem);margin-bottom:.4rem}
+.hero p{color:var(--muted);font-size:1rem;max-width:650px;margin:0 auto}
+
+/* Pricing selector */
+.pricing-bar{display:flex;align-items:center;gap:.5rem;margin:1rem auto;justify-content:center;flex-wrap:wrap;font-size:.85rem;color:var(--muted)}
+.pricing-bar select{background:var(--bg);border:1px solid var(--border);color:var(--text);padding:.35rem .6rem;border-radius:var(--radius);font-size:.85rem}
+.pricing-bar select:focus{outline:none;border-color:var(--accent)}
+
+/* Tabs */
+.tabs{display:flex;gap:.25rem;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:.25rem;margin-bottom:1.5rem;overflow-x:auto}
+.tab-btn{flex:1;padding:.55rem .8rem;background:none;border:none;color:var(--muted);cursor:pointer;border-radius:6px;font-weight:600;white-space:nowrap;font-size:.85rem;transition:all .2s}
+.tab-btn.active{background:var(--accent);color:#000}
+.tab-btn:hover:not(.active){color:var(--text)}
+
+/* Tool panels */
+.tool-panel{display:none}
+.tool-panel.active{display:block}
+
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;margin-bottom:1rem}
+.card h3{margin-bottom:.3rem;font-size:1.05rem}
+.card>p{color:var(--muted);font-size:.85rem;margin-bottom:1rem}
+
+textarea{width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:.75rem;border-radius:var(--radius);font-family:'SF Mono','Fira Code',monospace;font-size:.85rem;resize:vertical;min-height:110px}
+textarea:focus{outline:none;border-color:var(--accent)}
+
+.output-box{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:.75rem;min-height:50px;font-family:'SF Mono','Fira Code',monospace;font-size:.85rem;white-space:pre-wrap;word-break:break-word;margin-top:.5rem;max-height:260px;overflow-y:auto}
+
+.btn-row{display:flex;gap:.5rem;margin-top:.75rem;flex-wrap:wrap;align-items:center}
+.btn{background:var(--accent);color:#000;border:none;padding:.5rem 1rem;border-radius:var(--radius);font-weight:700;cursor:pointer;font-size:.82rem;transition:transform .1s,opacity .2s}
+.btn:hover{transform:scale(1.02)}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.btn.sec{background:transparent;border:1px solid var(--border);color:var(--text)}
+.btn.danger{background:var(--red);color:#fff}
+.btn.small{padding:.3rem .7rem;font-size:.75rem}
+
+/* Savings stats row */
+.savings-row{display:flex;gap:1rem;margin-top:.75rem;flex-wrap:wrap}
+.savings-chip{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:.5rem .8rem;font-size:.82rem;display:flex;align-items:center;gap:.4rem}
+.savings-chip .val{font-weight:700;color:var(--accent)}
+.savings-chip .val.green{color:var(--green)}
+.savings-chip .label{color:var(--muted);font-size:.75rem}
+
+/* History table */
+.history-table{width:100%;border-collapse:collapse;font-size:.8rem;margin-top:.5rem}
+.history-table th{text-align:left;padding:.4rem .5rem;border-bottom:1px solid var(--border);color:var(--muted);font-weight:600;font-size:.75rem}
+.history-table td{padding:.4rem .5rem;border-bottom:1px solid var(--border);vertical-align:top}
+.history-table tr:hover{background:var(--bg)}
+.history-table .mono{font-family:'SF Mono','Fira Code',monospace;font-size:.78rem}
+
+/* Bulk textarea */
+.bulk-area{min-height:200px;font-size:.82rem}
+
+/* Premium lock overlay */
+.premium-lock{position:relative;overflow:hidden}
+.premium-lock::after{content:'🔒 Premium — Upgrade to unlock';position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(13,17,23,.88);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1rem;color:var(--accent);cursor:pointer;z-index:5}
+
+/* Modal */
+.modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.72);z-index:100;align-items:center;justify-content:center}
+.modal.show{display:flex}
+.modal-content{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:2rem;max-width:450px;width:92%;text-align:center;max-height:90vh;overflow-y:auto}
+.modal-content h3{font-size:1.5rem;margin-bottom:.5rem}
+.modal-content .price{font-size:2.5rem;font-weight:800;color:var(--accent);margin:1rem 0}
+.modal-content .price small{font-size:1rem;color:var(--muted)}
+.modal-content ul{list-style:none;text-align:left;margin:1.5rem 0}
+.modal-content li{padding:.4rem 0;color:var(--text);font-size:.9rem}
+.modal-content li::before{content:'✓ ';color:var(--green);font-weight:700}
+.modal-content .fine-print{color:var(--muted);font-size:.75rem;margin-top:.75rem}
+
+/* Toast */
+.toast{position:fixed;bottom:20px;right:20px;background:var(--green);color:#000;padding:.6rem 1.2rem;border-radius:var(--radius);font-weight:700;font-size:.85rem;z-index:200;opacity:0;transform:translateY(10px);transition:all .3s;pointer-events:none}
+.toast.show{opacity:1;transform:translateY(0)}
+
+/* API key display */
+.api-key-display{font-family:'SF Mono','Fira Code',monospace;background:var(--bg);border:1px solid var(--border);padding:.5rem .8rem;border-radius:var(--radius);font-size:.78rem;word-break:break-all;margin:.5rem 0;user-select:all}
+
+/* Footer */
+footer{text-align:center;padding:1.5rem;color:var(--muted);font-size:.78rem;border-top:1px solid var(--border);margin-top:2rem}
+footer a{color:var(--accent)}
+
+/* Checkbox toggle */
+.toggle-label{display:flex;align-items:center;gap:.4rem;font-size:.82rem;color:var(--muted);cursor:pointer}
+.toggle-label input{margin:0}
+
+/* Responsive */
+@media(max-width:600px){
+  header{padding:.6rem .8rem}
+  .logo{font-size:1.1rem}
+  main{padding:1rem .5rem}
+  .card{padding:1rem}
+  .tabs{flex-wrap:nowrap;font-size:.78rem}
+  .tab-btn{padding:.4rem .5rem;font-size:.78rem}
+  .savings-row{gap:.4rem}
+  .savings-chip{padding:.4rem .6rem;font-size:.75rem}
+}
+
+/* Animate savings bar */
+@keyframes countUp{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+.savings-row .savings-chip{animation:countUp .3s ease-out}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo"><span class="rock">🪨</span> Token <span>Saver Pro</span></div>
+  <button class="cta-btn" id="header-premium-btn" onclick="showPremium()">🚀 Go Premium — $9</button>
+</header>
+
+<main>
+  <div class="hero">
+    <h1>why pay many token when few do trick 🪨</h1>
+    <p>Paste your text, see how many tokens you'd save with caveman-style communication — and exactly how much money stays in your pocket.</p>
+  </div>
+
+  <!-- Pricing model selector -->
+  <div class="pricing-bar">
+    <span>💰 Pricing model:</span>
+    <select id="pricing-model" onchange="onPricingChange()">
+      <option value="gpt4o">GPT-4o ($2.50/$10 per 1M)</option>
+      <option value="gpt4" selected>GPT-4 ($30/$60 per 1M)</option>
+      <option value="claude">Claude 3.5 ($15/$75 per 1M)</option>
+      <option value="gpt4mini">GPT-4o-mini ($0.15/$0.60 per 1M)</option>
+      <option value="custom">Custom rate...</option>
+    </select>
+    <span id="custom-rate-wrap" style="display:none">
+      $<input type="number" id="custom-input-rate" value="3" step="0.01" min="0" style="width:50px;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:.2rem;border-radius:4px;font-size:.8rem"> /1M input
+      $<input type="number" id="custom-output-rate" value="15" step="0.01" min="0" style="width:50px;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:.2rem;border-radius:4px;font-size:.8rem"> /1M output
+    </span>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('single')">📝 Single Text</button>
+    <button class="tab-btn" onclick="switchTab('bulk')">📦 Bulk Process</button>
+    <button class="tab-btn" onclick="switchTab('history')">📊 History</button>
+    <button class="tab-btn" onclick="switchTab('api')">🔑 API Access</button>
+  </div>
+
+  <!-- Tab 1: Single Text -->
+  <div class="tool-panel active" id="tab-single">
+    <div class="card">
+      <h3>📝 Paste Your Verbose Text</h3>
+      <p>Drop in any verbose text — emails, docs, AI prompts — and see the caveman translation with token & dollar savings.</p>
+      <textarea id="single-input" placeholder="Paste verbose text here...&#10;&#10;Example: I would like to kindly request that you take into consideration the possibility of optimizing the database queries, due to the fact that the application performance has been degrading at this point in time."></textarea>
+      <div class="btn-row">
+        <button class="btn" onclick="processSingle()">🪨 Caveman It!</button>
+        <button class="btn sec" onclick="clearSingle()">Clear</button>
+        <button class="btn sec" id="single-copy-btn" onclick="copyOutput('single-caveman')">📋 Copy Caveman</button>
+      </div>
+      <div class="output-box" id="single-caveman">Caveman translation will appear here...</div>
+      <div class="savings-row" id="single-savings" style="display:none">
+        <div class="savings-chip"><span class="label">Original</span><span class="val" id="s-orig-tokens">—</span> tokens</div>
+        <div class="savings-chip"><span class="label">Caveman</span><span class="val" id="s-cave-tokens">—</span> tokens</div>
+        <div class="savings-chip"><span class="label">Saved</span><span class="val green" id="s-saved-tokens">—</span> tokens</div>
+        <div class="savings-chip"><span class="label">💵 Saved</span><span class="val green" id="s-saved-dollars">—</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab 2: Bulk Process -->
+  <div class="tool-panel" id="tab-bulk">
+    <div class="card" id="bulk-card">
+      <h3>📦 Bulk Text Processing</h3>
+      <p>Paste multiple texts (one per line, or separated by "---"). Process them all at once and see total savings.</p>
+      <textarea id="bulk-input" class="bulk-area" placeholder="Paste multiple texts here. Separate with '---' between entries...&#10;&#10;Entry 1: I would like to request your assistance with the matter&#10;---&#10;Entry 2: Due to the fact that we are experiencing delays...&#10;---&#10;Entry 3: It is important to note that the deadline has been extended"></textarea>
+      <div class="btn-row">
+        <button class="btn" id="bulk-process-btn" onclick="processBulk()">🪨 Process All</button>
+        <button class="btn sec" onclick="clearBulk()">Clear</button>
+        <button class="btn sec" id="bulk-csv-btn" onclick="exportCSV()" disabled>📥 Export CSV</button>
+      </div>
+      <div class="savings-row" id="bulk-savings" style="display:none">
+        <div class="savings-chip"><span class="label">Entries</span><span class="val" id="b-entries">—</span></div>
+        <div class="savings-chip"><span class="label">Total Saved</span><span class="val green" id="b-saved-tokens">—</span> tokens</div>
+        <div class="savings-chip"><span class="label">💵 Total Saved</span><span class="val green" id="b-saved-dollars">—</span></div>
+      </div>
+      <div class="output-box" id="bulk-results" style="display:none"></div>
+    </div>
+  </div>
+
+  <!-- Tab 3: History -->
+  <div class="tool-panel" id="tab-history">
+    <div class="card">
+      <h3>📊 Processing History</h3>
+      <p>Your saved processing results. All data stored locally in your browser.</p>
+      <div class="btn-row">
+        <button class="btn sec small" onclick="clearHistory()">🗑 Clear History</button>
+        <button class="btn sec small" id="hist-csv-btn" onclick="exportHistoryCSV()" disabled>📥 Export History CSV</button>
+      </div>
+      <div id="history-container" style="margin-top:.75rem">
+        <p style="color:var(--muted);text-align:center;padding:2rem">No history yet. Process some text to see it here.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab 4: API Access -->
+  <div class="tool-panel" id="tab-api">
+    <div class="card" id="api-card">
+      <h3>🔑 API Access</h3>
+      <p>Use the Token Saver Pro API in your own tools and scripts. Premium feature.</p>
+      <div id="api-content">
+        <p style="color:var(--muted)">Your API key:</p>
+        <div class="api-key-display" id="api-key-display">—</div>
+        <p style="color:var(--muted);font-size:.8rem;margin-top:.5rem">Send a POST to <code style="color:var(--accent)">https://api.tokensaver.pro/v1/caveman</code> with JSON body: <code>{"text": "your verbose text"}</code></p>
+        <p style="color:var(--muted);font-size:.8rem">Include header: <code>Authorization: Bearer YOUR_API_KEY</code></p>
+        <button class="btn sec small" onclick="copyOutput('api-key-display')" style="margin-top:.5rem">📋 Copy Key</button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- Premium Modal -->
+<div class="modal" id="premium-modal">
+  <div class="modal-content">
+    <h3>🪨 Token Saver Pro Premium</h3>
+    <p>One payment. Lifetime access. Save tokens forever.</p>
+    <div class="price">$9 <small>one-time</small></div>
+    <ul>
+      <li>Bulk text processing (unlimited)</li>
+      <li>Full processing history (last 500 entries)</li>
+      <li>CSV export of all results</li>
+      <li>API access for your own tools</li>
+      <li>Custom pricing models</li>
+      <li>Priority support</li>
+      <li>Support indie dev 🪨</li>
+    </ul>
+    <a href="https://buy.stripe.com/9B6bJ3flR2Ju5zGfrt1oI09" class="cta-btn" style="font-size:1rem;padding:.8rem 2rem">Buy Now — $9</a>
+    <p class="fine-print">Secure payment via Stripe. Instant access after purchase.</p>
+    <button class="btn sec" onclick="closePremium()" style="margin-top:.75rem">Maybe later</button>
+  </div>
+</div>
+
+<!-- Toast notification -->
+<div class="toast" id="toast"></div>
+
+<footer>
+  <p>🪨 Token Saver Pro — part of the <a href="https://rumblingb.github.io/caveman-tools/">Caveman Tools</a> ecosystem</p>
+  <p><a href="https://rumblingb.github.io/jacks-toolbox/">More Tools</a> · <a href="https://github.com/Rumblingb/token-saver-pro">GitHub</a></p>
+</footer>
+
+<script>
+// ===== STATE =====
+const STORAGE_KEY = 'tsp-history';
+const PREMIUM_KEY = 'tsp-premium';
+const API_KEY_KEY = 'tsp-api-key';
+
+// Pricing models: [input $/1M tokens, output $/1M tokens]
+const PRICING_MODELS = {
+  gpt4o:    [2.50, 10.00],
+  gpt4:     [30.00, 60.00],
+  claude:   [15.00, 75.00],
+  gpt4mini: [0.15, 0.60],
+  custom:   [3.00, 15.00]
+};
+
+let currentPricing = 'gpt4';
+
+// ===== TOKEN ESTIMATION =====
+// Rough heuristic: ~4 characters per token for English text (GPT tokenizer approximation)
+function estimateTokens(text) {
+  if (!text || !text.trim()) return 0;
+  // Count words + punctuation. Rough: 1 token ≈ 0.75 words ≈ 4 chars
+  const chars = text.length;
+  const words = text.split(/\s+/).filter(w => w.length > 0).length;
+  // Blend: word count is more accurate for English
+  return Math.max(1, Math.round(words * 1.3));
+}
+
+// ===== CAVEMAN TRANSLATION =====
+const CAVEMAN_RULES = [
+  [/\\b(I would like to|I want to|I'd like to)\\b/gi, 'want'],
+  [/\\b(I am going to|I will|I'm going to)\\b/gi, 'will'],
+  [/\\b(in order to|so as to|for the purpose of)\\b/gi, 'to'],
+  [/\\b(due to the fact that|because of the fact that|owing to the fact that)\\b/gi, 'because'],
+  [/\\b(at this point in time|at the present time|currently)\\b/gi, 'now'],
+  [/\\b(in the event that|in case that)\\b/gi, 'if'],
+  [/\\b(a large number of|a great many|numerous)\\b/gi, 'many'],
+  [/\\b(the majority of|most of the)\\b/gi, 'most'],
+  [/\\b(it is possible that|there is a chance that)\\b/gi, 'maybe'],
+  [/\\b(take into consideration|take into account)\\b/gi, 'consider'],
+  [/\\b(make a decision|come to a decision)\\b/gi, 'decide'],
+  [/\\b(with regard to|in regard to|with respect to|in terms of|concerning)\\b/gi, 'about'],
+  [/\\b(in the process of)\\b/gi, 'while'],
+  [/\\b(has the ability to|is able to|is capable of)\\b/gi, 'can'],
+  [/\\b(it is important to note that|it should be noted that)\\b/gi, ''],
+  [/\\b(please be advised that|I would like to inform you that)\\b/gi, ''],
+  [/\\b(I think that|I believe that|in my opinion)\\b/gi, 'think'],
+  [/\\b(first of all|to begin with|to start with)\\b/gi, 'first'],
+  [/\\b(last but not least|finally)\\b/gi, 'last'],
+  [/\\b(the fact that|the reality that)\\b/gi, 'that'],
+  [/\\b(despite the fact that|in spite of the fact that)\\b/gi, 'although'],
+  [/\\b(on a regular basis|on a daily basis)\\b/gi, 'often'],
+  [/\\b(I would be happy to|I'd be happy to|I'd be glad to)\\b/gi, 'will'],
+  [/\\b(let me know if you have any questions|feel free to reach out)\\b/gi, ''],
+  [/\\b(thank you for your time|thanks for reading)\\b/gi, ''],
+  [/\\b(please let me know|let me know)\\b/gi, 'tell me'],
+  [/\\b(absolutely|definitely|certainly|undoubtedly)\\b/gi, ''],
+  [/\\b(very|really|quite|rather|extremely|highly)\\b/gi, ''],
+  [/\\b(basically|essentially|fundamentally)\\b/gi, ''],
+  [/\\b(just|simply|merely)\\b/gi, ''],
+  [/\\b(kindly|please)\\b/gi, ''],
+  [/\\b(I would appreciate it if you could|I'd appreciate it if)\\b/gi, ''],
+  [/\\b(do not hesitate to|don't hesitate to)\\b/gi, ''],
+  [/\\b(it is worth noting that|it is noteworthy that)\\b/gi, ''],
+  [/\\b(in light of the fact that)\\b/gi, 'since'],
+  [/\\b(for the reason that)\\b/gi, 'because'],
+];
+
+function toCaveman(text) {
+  if (!text || !text.trim()) return '';
+  let result = text;
+  CAVEMAN_RULES.forEach(([pattern, replacement]) => {
+    result = result.replace(pattern, replacement);
+  });
+  result = result.replace(/\\s{2,}/g, ' ').trim();
+  // Fix leading punctuation/spaces after removals
+  result = result.replace(/^\\s*[,.;:!?]\\s*/, '');
+  // Capitalize first letter
+  if (result.length > 0) {
+    result = result.charAt(0).toUpperCase() + result.slice(1);
+  }
+  return result;
+}
+
+// ===== COST CALCULATION =====
+function getPricingRates() {
+  const model = document.getElementById('pricing-model').value;
+  if (model === 'custom') {
+    const inRate = parseFloat(document.getElementById('custom-input-rate').value) || 3;
+    const outRate = parseFloat(document.getElementById('custom-output-rate').value) || 15;
+    return [inRate, outRate];
+  }
+  return PRICING_MODELS[model] || PRICING_MODELS['gpt4'];
+}
+
+function calculateCost(tokens, isInput) {
+  const [inRate, outRate] = getPricingRates();
+  const rate = isInput ? inRate : outRate;
+  return (tokens / 1000000) * rate;
+}
+
+// ===== SINGLE PROCESS =====
+function processSingle() {
+  const input = document.getElementById('single-input').value.trim();
+  if (!input) { toast('Please paste some text first!'); return; }
+
+  const caveman = toCaveman(input);
+  document.getElementById('single-caveman').textContent = caveman || '(Text was already pretty minimal!)';
+
+  const origTokens = estimateTokens(input);
+  const caveTokens = estimateTokens(caveman);
+  const savedTokens = Math.max(0, origTokens - caveTokens);
+
+  // Assume mixed usage: 70% input tokens, 30% "output" for caveman version
+  const origCost = calculateCost(origTokens, true);
+  const caveCost = calculateCost(caveTokens, true) * 0.7 + calculateCost(caveTokens, false) * 0.3;
+  const savedDollars = Math.max(0, origCost - caveCost);
+
+  document.getElementById('s-orig-tokens').textContent = origTokens.toLocaleString();
+  document.getElementById('s-cave-tokens').textContent = caveTokens.toLocaleString();
+  document.getElementById('s-saved-tokens').textContent = savedTokens.toLocaleString();
+  document.getElementById('s-saved-dollars').textContent = '$' + savedDollars.toFixed(4);
+  document.getElementById('single-savings').style.display = 'flex';
+
+  // Save to history if premium
+  if (isPremium()) {
+    addToHistory(input, caveman, origTokens, caveTokens, savedTokens, savedDollars);
+  }
+}
+
+function clearSingle() {
+  document.getElementById('single-input').value = '';
+  document.getElementById('single-caveman').textContent = 'Caveman translation will appear here...';
+  document.getElementById('single-savings').style.display = 'none';
+}
+
+// ===== BULK PROCESS =====
+function processBulk() {
+  if (!isPremium()) {
+    showPremium();
+    return;
+  }
+
+  const raw = document.getElementById('bulk-input').value.trim();
+  if (!raw) { toast('Paste some texts first!'); return; }
+
+  // Split by "---" lines
+  const entries = raw.split(/\\n?---+\\n?/).map(e => e.trim()).filter(e => e.length > 0);
+  if (entries.length === 0) { toast('No valid entries found!'); return; }
+
+  let totalOrigTokens = 0, totalCaveTokens = 0, totalSavedTokens = 0;
+  const results = [];
+
+  entries.forEach((entry, i) => {
+    const caveman = toCaveman(entry);
+    const origT = estimateTokens(entry);
+    const caveT = estimateTokens(caveman);
+    const savedT = Math.max(0, origT - caveT);
+
+    totalOrigTokens += origT;
+    totalCaveTokens += caveT;
+    totalSavedTokens += savedT;
+
+    results.push({ index: i + 1, original: entry, caveman, origTokens: origT, caveTokens: caveT, savedTokens: savedT });
+  });
+
+  const totalSavedDollars = calculateCost(totalSavedTokens, true);
+
+  document.getElementById('b-entries').textContent = entries.length;
+  document.getElementById('b-saved-tokens').textContent = totalSavedTokens.toLocaleString();
+  document.getElementById('b-saved-dollars').textContent = '$' + totalSavedDollars.toFixed(4);
+  document.getElementById('bulk-savings').style.display = 'flex';
+
+  // Show results preview (first 10)
+  const preview = results.slice(0, 10).map(r =>
+    `[${r.index}] ${r.origTokens}→${r.caveTokens} tokens (saved ${r.savedTokens}) | Original: ${r.original.slice(0, 80)}...`
+  ).join('\\n');
+  const more = results.length > 10 ? `\\n... and ${results.length - 10} more entries` : '';
+  document.getElementById('bulk-results').textContent = preview + more;
+  document.getElementById('bulk-results').style.display = 'block';
+  document.getElementById('bulk-csv-btn').disabled = false;
+
+  // Store bulk results for CSV export
+  window._bulkResults = results;
+
+  // Add each to history
+  results.forEach(r => {
+    addToHistory(r.original, r.caveman, r.origTokens, r.caveTokens, r.savedTokens, calculateCost(r.savedTokens, true));
+  });
+}
+
+function clearBulk() {
+  document.getElementById('bulk-input').value = '';
+  document.getElementById('bulk-results').style.display = 'none';
+  document.getElementById('bulk-savings').style.display = 'none';
+  document.getElementById('bulk-csv-btn').disabled = true;
+  window._bulkResults = null;
+}
+
+// ===== CSV EXPORT =====
+function exportCSV() {
+  if (!window._bulkResults || window._bulkResults.length === 0) {
+    toast('No bulk results to export!');
+    return;
+  }
+  const rows = [['Index', 'Original Tokens', 'Caveman Tokens', 'Saved Tokens', 'Saved $', 'Original Text', 'Caveman Text']];
+  window._bulkResults.forEach(r => {
+    rows.push([
+      r.index, r.origTokens, r.caveTokens, r.savedTokens,
+      '$' + calculateCost(r.savedTokens, true).toFixed(4),
+      '"' + r.original.replace(/"/g, '""') + '"',
+      '"' + r.caveman.replace(/"/g, '""') + '"'
+    ]);
+  });
+  const csv = rows.map(r => r.join(',')).join('\\n');
+  downloadFile('token-saver-bulk.csv', csv, 'text/csv');
+  toast('CSV exported!');
+}
+
+function exportHistoryCSV() {
+  const history = getHistory();
+  if (history.length === 0) {
+    toast('No history to export!');
+    return;
+  }
+  const rows = [['Date', 'Original Tokens', 'Caveman Tokens', 'Saved Tokens', 'Saved $', 'Original Text', 'Caveman Text']];
+  history.forEach(h => {
+    rows.push([
+      h.date, h.origTokens, h.caveTokens, h.savedTokens,
+      '$' + h.savedDollars.toFixed(4),
+      '"' + h.original.replace(/"/g, '""') + '"',
+      '"' + h.caveman.replace(/"/g, '""') + '"'
+    ]);
+  });
+  const csv = rows.map(r => r.join(',')).join('\\n');
+  downloadFile('token-saver-history.csv', csv, 'text/csv');
+  toast('History CSV exported!');
+}
+
+function downloadFile(filename, content, mimeType) {
+  const blob = new Blob([content], { type: mimeType });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+// ===== HISTORY =====
+function getHistory() {
+  try {
+    return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+  } catch { return []; }
+}
+
+function addToHistory(original, caveman, origTokens, caveTokens, savedTokens, savedDollars) {
+  const history = getHistory();
+  history.unshift({
+    date: new Date().toISOString(),
+    original: original.slice(0, 500),
+    caveman: caveman.slice(0, 500),
+    origTokens,
+    caveTokens,
+    savedTokens,
+    savedDollars
+  });
+  // Keep last 500
+  const trimmed = history.slice(0, 500);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(trimmed));
+}
+
+function clearHistory() {
+  if (confirm('Delete all processing history? This cannot be undone.')) {
+    localStorage.removeItem(STORAGE_KEY);
+    renderHistory();
+    toast('History cleared');
+  }
+}
+
+function renderHistory() {
+  const history = getHistory();
+  const container = document.getElementById('history-container');
+  const csvBtn = document.getElementById('hist-csv-btn');
+
+  if (history.length === 0) {
+    container.innerHTML = '<p style="color:var(--muted);text-align:center;padding:2rem">No history yet. Process some text to see it here.</p>';
+    csvBtn.disabled = true;
+    return;
+  }
+
+  csvBtn.disabled = false;
+
+  let html = '<table class="history-table"><thead><tr><th>Date</th><th>Original</th><th>Caveman</th><th>Tokens Saved</th><th>💵 Saved</th></tr></thead><tbody>';
+  history.slice(0, 100).forEach(h => {
+    const date = new Date(h.date).toLocaleString();
+    html += `<tr>
+      <td style="white-space:nowrap;font-size:.72rem;color:var(--muted)">${date}</td>
+      <td class="mono">${escapeHtml(h.original.slice(0, 80))}${h.original.length > 80 ? '...' : ''}</td>
+      <td class="mono">${escapeHtml(h.caveman.slice(0, 80))}${h.caveman.length > 80 ? '...' : ''}</td>
+      <td style="white-space:nowrap"><span style="color:var(--green);font-weight:700">${h.savedTokens.toLocaleString()}</span> (${h.origTokens}→${h.caveTokens})</td>
+      <td style="white-space:nowrap;color:var(--green);font-weight:700">$${h.savedDollars.toFixed(4)}</td>
+    </tr>`;
+  });
+  html += '</tbody></table>';
+  if (history.length > 100) {
+    html += `<p style="color:var(--muted);font-size:.75rem;margin-top:.5rem">Showing 100 of ${history.length} entries.</p>`;
+  }
+  container.innerHTML = html;
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+// ===== PREMIUM =====
+function isPremium() {
+  return localStorage.getItem(PREMIUM_KEY) === 'true';
+}
+
+function showPremium() {
+  document.getElementById('premium-modal').classList.add('show');
+}
+
+function closePremium() {
+  document.getElementById('premium-modal').classList.remove('show');
+}
+
+function updatePremiumUI() {
+  const premium = isPremium();
+  const headerBtn = document.getElementById('header-premium-btn');
+
+  if (premium) {
+    headerBtn.textContent = '⭐ Premium Active';
+    headerBtn.style.background = 'var(--green)';
+    headerBtn.onclick = null;
+
+    // Remove premium lock from bulk
+    const bulkCard = document.getElementById('bulk-card');
+    if (bulkCard) bulkCard.classList.remove('premium-lock');
+
+    // Show API key
+    const apiCard = document.getElementById('api-card');
+    if (apiCard) apiCard.classList.remove('premium-lock');
+    document.getElementById('api-content').style.display = 'block';
+
+    // Generate API key if needed
+    let apiKey = localStorage.getItem(API_KEY_KEY);
+    if (!apiKey) {
+      apiKey = 'tsp_' + Array.from(crypto.getRandomValues(new Uint8Array(16)))
+        .map(b => b.toString(16).padStart(2, '0')).join('');
+      localStorage.setItem(API_KEY_KEY, apiKey);
+    }
+    document.getElementById('api-key-display').textContent = apiKey;
+    document.getElementById('api-key-display').style.display = 'block';
+  } else {
+    headerBtn.textContent = '🚀 Go Premium — $9';
+    headerBtn.style.background = 'var(--accent)';
+    headerBtn.onclick = showPremium;
+
+    // Premium lock bulk tab
+    const bulkCard = document.getElementById('bulk-card');
+    if (bulkCard) bulkCard.classList.add('premium-lock');
+
+    // Premium lock API tab
+    const apiCard = document.getElementById('api-card');
+    if (apiCard) apiCard.classList.add('premium-lock');
+    document.getElementById('api-content').style.display = 'none';
+  }
+}
+
+// ===== TAB SWITCHING =====
+function switchTab(name) {
+  document.querySelectorAll('.tool-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  const panel = document.getElementById('tab-' + name);
+  if (panel) panel.classList.add('active');
+  // Highlight clicked tab
+  const btn = event && event.target ? event.target : document.querySelector(`[onclick*="${name}"]`);
+  if (btn) btn.classList.add('active');
+
+  if (name === 'history') renderHistory();
+}
+
+// ===== PRICING =====
+function onPricingChange() {
+  const model = document.getElementById('pricing-model').value;
+  currentPricing = model;
+  const customWrap = document.getElementById('custom-rate-wrap');
+  customWrap.style.display = model === 'custom' ? 'inline' : 'none';
+
+  // Recalculate if there are active results
+  const input = document.getElementById('single-input').value.trim();
+  if (input && document.getElementById('single-savings').style.display !== 'none') {
+    processSingle();
+  }
+}
+
+// ===== UTILS =====
+function copyOutput(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const text = el.textContent || el.value || '';
+  if (!text || text.includes('will appear here') || text === '—') return;
+  navigator.clipboard.writeText(text).then(() => toast('Copied!'));
+}
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._timeout);
+  t._timeout = setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+// ===== INIT =====
+document.getElementById('premium-modal').addEventListener('click', function(e) {
+  if (e.target === this) closePremium();
+});
+
+// Premium lock click handlers
+document.getElementById('bulk-card').addEventListener('click', function(e) {
+  if (!isPremium() && e.target.closest('.premium-lock')) {
+    showPremium();
+  }
+});
+document.getElementById('api-card').addEventListener('click', function(e) {
+  if (!isPremium() && e.target.closest('.premium-lock')) {
+    showPremium();
+  }
+});
+
+// Browser speech for caveman output (fun easter egg)
+let speechSynth = null;
+function speakCaveman(text) {
+  if (!window.speechSynthesis) return;
+  if (speechSynth) {
+    speechSynthesis.cancel();
+    speechSynth = null;
+  }
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.rate = 0.75;
+  utterance.pitch = 0.8;
+  speechSynthesis.speak(utterance);
+}
+
+// Check premium from URL redirect
+const urlParams = new URLSearchParams(window.location.search);
+if (urlParams.get('premium') === 'activated') {
+  localStorage.setItem(PREMIUM_KEY, 'true');
+  window.history.replaceState({}, '', '/token-saver-pro/');
+  updatePremiumUI();
+  toast('🎉 Premium activated! Enjoy Token Saver Pro!');
+}
+
+// Initial setup
+updatePremiumUI();
+if (isPremium()) {
+  // Show API key immediately
+  let apiKey = localStorage.getItem(API_KEY_KEY);
+  if (!apiKey) {
+    apiKey = 'tsp_' + Array.from(crypto.getRandomValues(new Uint8Array(16)))
+      .map(b => b.toString(16).padStart(2, '0')).join('');
+    localStorage.setItem(API_KEY_KEY, apiKey);
+  }
+  document.getElementById('api-key-display').textContent = apiKey;
+}
+
+// Expose API for programmatic use (only works when premium)
+window.TokenSaverPro = {
+  toCaveman,
+  estimateTokens,
+  calculateCost,
+  isPremium,
+  getHistory,
+  version: '1.0.0'
+};
+</script>
+</body>
+</html>
